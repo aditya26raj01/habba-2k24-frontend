@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { colleges } from "../resources/colleges";
 import { renderDepartments } from "../resources/departments";
 import { preferences } from "../resources/preferences";
@@ -6,23 +6,36 @@ import { years } from "../resources/year";
 import ReCAPTCHA from "react-google-recaptcha";
 import axios from "axios";
 import { toast } from "react-toastify";
+import CircularProgress from '@mui/material/CircularProgress';
 
 const Volunteer = () => {
-    const ref = useRef(null);
+    const [captchaRef, setCaptchaRef] = useState(null);
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ college: null, captcha: null, pref1: null, pref2: null });
     const handleInput = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     }
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if(formData.captcha === null){
+            toast.error("Please Complete the Captcha!");
+            return;
+        }
+        setLoading(true);
         try {
             const response = await axios.post(
                 process.env.REACT_APP_API_URL + "/register-volunteer",
                 formData
             );
+            setLoading(false);
+            captchaRef.reset();
+            setFormData({...formData, captcha : null});
             toast.success(response.data.message);
         } catch (error) {
-            toast.error(error.response.data.message);
+            setLoading(false);
+            captchaRef.reset();
+            setFormData({...formData, captcha : null});
+            toast.error(error.response ? error.response.data.message : "Some Error Occured, Try Again After Some Time!");
         }
     }
     return (
@@ -101,8 +114,8 @@ const Volunteer = () => {
                                 <option selected disabled defaultValue="">Team preferences 1</option>
                                 {preferences.map((preference, index) => {
                                     return <option key={index}
-                                    disabled={formData.pref2 === preference.value}
-                                    value={preference.value}>{preference.preference}</option>
+                                        disabled={formData.pref2 === preference.value}
+                                        value={preference.value}>{preference.preference}</option>
                                 })}
                             </select>
                             <select
@@ -111,12 +124,12 @@ const Volunteer = () => {
                                 name="pref2"
                                 autoComplete="off"
                                 onChange={(e) => handleInput(e)}
-                                >
+                            >
                                 <option selected disabled defaultValue="">Team preferences 2</option>
                                 {preferences.map((preference, index) => {
                                     return <option key={index}
-                                    disabled={formData.pref1 === preference.value}
-                                    value={preference.value}>{preference.preference}</option>
+                                        disabled={formData.pref1 === preference.value}
+                                        value={preference.value}>{preference.preference}</option>
                                 })}
                             </select>
                             <select
@@ -186,14 +199,21 @@ const Volunteer = () => {
                         </div>
                         <div className="captcha">
                             <ReCAPTCHA
-                                ref={ref}
+                                ref={(r) => setCaptchaRef(r)}
                                 sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+                                onVerify={() => {
+                                    console.log("hi");
+                                }}
                                 onChange={(value) => {
                                     setFormData({ ...formData, captcha: value });
                                 }}
                             />
                         </div>
-                        {formData.captcha && <button type="submit">Register</button>}
+                        {formData.captcha && (!loading ? <button type="submit">Register</button> :
+                            <div className="spinner">
+                                <CircularProgress />
+                            </div>)
+                        }
                     </form>
                     <div className="help">For any Queries Contact Us on : <a href="mailto:acharyahabba@acharya.ac.in">acharyahabba@acharya.ac.in</a></div>
                 </div>

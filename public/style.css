@@ -33,7 +33,11 @@ body {
     line-height: 1.5;
     overflow: scroll;
 }
-
+.spinner{
+    display: flex;
+    justify-content: center;
+    grid-column: span 2;
+}
 .links-wrapper {
     height: 90vh;
     display: flex;
