@@ -17,5 +17,6 @@ export const preferences = [
     { value: "content", preference: "Content" },
     { value: "decoration", preference: "Decoration" },
     { value: "fine arts", preference: "Fine Arts" },
-    { value: "design and digital art", preference: "Design and Digital Art" },
+    { value: "marketing", preference: "Marketing" },
+    { value: "event management", preference: "Event management" },
 ];
